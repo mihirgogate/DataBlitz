@@ -6,6 +6,7 @@
  */
 
 #include "RollingValueStore.h"
+#include<iostream>
 
 RollingValueStore::RollingValueStore() {
 	// TODO Auto-generated constructor stub
@@ -41,14 +42,16 @@ void RollingValueStore::declareKey(char* key,int numSamples)
 		newEntry = createEntry(numSamples);
 
 	}
-
-	store[key]=newEntry;
+	cout << key << endl;
+	store.insert(pair<string,RollingValueStoreEntry*>(key,newEntry));
+	//store[key]=newEntry;
 }
 
 
 
 bool RollingValueStore::exists(char* key)
 {
+
 	if(store.find(key)==store.end())
 		{
 			return false;
@@ -68,17 +71,14 @@ RollingValueStoreEntry* RollingValueStore::createEntry(int numSamples)
 	ptr->newPosToInsert=0;
 	ptr->samples = new vector<float>(numSamples);
 	ptr->hints = new map<int,float>();
-
 	return ptr;
 }
 
 
 bool RollingValueStore::addRollingValues(char* key,vector<float>* newSamplesPtr)
 {
-
 	if(exists(key)==true)
 	{
-
 		RollingValueStoreEntry* entry = store[key];
 		int numElementsForKey = entry->n;
 		int numNewElements = newSamplesPtr->size();
@@ -174,7 +174,6 @@ bool RollingValueStore::getRollingAvg(char* key,int numSamples,float* result)
 
 bool RollingValueStore::addHint(char* key,int numSamples)
 {
-
 		if(exists(key)==true)
 		{
 			map<int,float>* hints= store[key]->hints;

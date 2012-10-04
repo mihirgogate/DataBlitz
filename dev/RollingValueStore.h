@@ -27,7 +27,7 @@ class RollingValueStore {
 
 private:
 
-	map<char*,RollingValueStoreEntry*> store;
+	map<string,RollingValueStoreEntry*> store;
 	RollingValueStoreEntry* createEntry(int numSamples);
 	void deleteEntry(RollingValueStoreEntry* ptr);
 	void updateHints(RollingValueStoreEntry* ptr);
