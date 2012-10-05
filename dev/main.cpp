@@ -2,28 +2,36 @@
 #include <string>
 #include<iostream>
 
-#include "DataStore.h"
 #include "RollingValueStore.h"
 #include "IntegerStore.h"
 #include "StringParserandInvoker.h"
+#include "server.h"
 
 using namespace std;
 
-int server_main (int argc, char *argv[],DataStore* ds);
 
 int main(int argc, char *argv[])
 {
-	DataStore ds;
-	server_main(argc,argv,&ds);
+	if (argc != 2)
+	{
+	  fprintf (stderr, "Error: Usage : %s [port]\n", argv[0]);
+	  return 1;
+	}
+
 	IntegerStore is;
 	RollingValueStore rvs;
 	StringParserandInvoker spi(is,rvs);
+
+	server_main(argv[1],&spi);
+
+/*  Sample tests below
 	string message="      PUT    test 15      ";
 	string returnMessage = spi.operate(message);
 	cout << returnMessage <<endl;
 	message="GET test";
 	returnMessage = spi.operate(message);
 	cout << returnMessage <<endl;
+
 	message="INCREMENT   test 10";
 	returnMessage = spi.operate(message);
 	cout << returnMessage <<endl;
@@ -66,18 +74,9 @@ int main(int argc, char *argv[])
 	cout<< message << endl;
 	returnMessage = spi.operate(message);
 	cout << returnMessage <<endl;
-	return 0;
 
-	/*
-	 *
-	 * int res;
-	 * bool isValid;
-	 * isValid = increment("",1,&res)
-	 * if(isValid)
-	 * 	  //I can use res
-	 * else
-	 * 	  // res contains junk
-	 */
+*/
+	return 0;
 }
 
 

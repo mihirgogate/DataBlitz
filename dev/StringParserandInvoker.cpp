@@ -16,13 +16,14 @@
 
 StringParserandInvoker::StringParserandInvoker() {
 
+	str=NULL;
 
 }
 
 StringParserandInvoker::StringParserandInvoker(IntegerStore is, RollingValueStore rs) {
 	this->is=is;
 	this->rvs=rs;
-
+	str=NULL;
 }
 
 string StringParserandInvoker::operate(string message)
