@@ -211,9 +211,12 @@ int server_main (char *port,StringParserandInvoker* stringParserAndInvoker)
                    *Find the results of the command
                    */
                   string ipAsString = ip;
+                  printf("%s",ip);
                   string opAsString;
                   opAsString = stringParserAndInvoker->operate(ipAsString);
-                  printf("%s",opAsString.c_str());
+                  //append a \n so telnet output is clean. TODO: remove when u find aya better w
+                  opAsString =opAsString.append("\n");
+
                   op=opAsString.c_str();
                   //String parser is invoked here that handles the messages
 

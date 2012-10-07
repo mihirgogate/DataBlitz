@@ -72,7 +72,6 @@ string StringParserandInvoker::operate(string message)
 		returnVal=put(tokens);
 		break;
 	case getvalue:
-		//cout << "GET" << endl;
 		returnVal=get(tokens);
 		break;
 	case incrementvalue:
