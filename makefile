@@ -7,3 +7,5 @@ main :	dir
 dir:	
 	mkdir -p $(binDirectory)
 
+clean:
+	rm -rf $(binDirectory)
