@@ -30,8 +30,10 @@ private:
 	map<string,RollingValueStoreEntry*> store;
 	RollingValueStoreEntry* createEntry(int numSamples);
 	void deleteEntry(RollingValueStoreEntry* ptr);
-	void updateHints(RollingValueStoreEntry* ptr);
+	void updateHints(RollingValueStoreEntry* ptr, vector<float>*);
 	bool calculateMovingAvgWithoutHint(int numSamples,RollingValueStoreEntry* current,float* result);
+	float sumElementsInVector(vector<float>*);
+	float sumElementsInVector(vector<float>*,int,int);
 
 public:
 	RollingValueStore();

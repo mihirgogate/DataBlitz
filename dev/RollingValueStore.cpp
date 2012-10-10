@@ -14,107 +14,92 @@ RollingValueStore::RollingValueStore() {
 }
 
 RollingValueStore::~RollingValueStore() {
-	// TODO Ahauto-generated destructor stub
+	// TODO Auto-generated destructor stub
 }
 
 void RollingValueStore::deleteEntry(RollingValueStoreEntry* ptr) {
 	ptr->hints->clear();
 	ptr->samples->clear();
 	delete ptr;
-	ptr=NULL;
+	ptr = NULL;
 
 }
 
-void RollingValueStore::declareKey(char* key,int numSamples)
-{
-	RollingValueStoreEntry* newEntry=NULL;
+void RollingValueStore::declareKey(char* key, int numSamples) {
+	RollingValueStoreEntry* newEntry = NULL;
 
-	if(exists(key)==true)
-	{
+	if (exists(key) == true) {
 		//flush the earlier entry and create a new one
 		RollingValueStoreEntry* ptr = store[key];
 		deleteEntry(ptr);
 		newEntry = createEntry(numSamples);
-	}
-	else
-	{
+	} else {
 		//create a new entry
 		newEntry = createEntry(numSamples);
 
 	}
 	cout << key << endl;
-	store.insert(pair<string,RollingValueStoreEntry*>(key,newEntry));
+	store.insert(pair<string, RollingValueStoreEntry*>(key, newEntry));
 	//store[key]=newEntry;
 }
 
+bool RollingValueStore::exists(char* key) {
 
-
-bool RollingValueStore::exists(char* key)
-{
-
-	if(store.find(key)==store.end())
-		{
-			return false;
-		}
-				else
-		{
-				return true;
-		}
+	if (store.find(key) == store.end()) {
+		return false;
+	} else {
+		return true;
+	}
 }
 
-RollingValueStoreEntry* RollingValueStore::createEntry(int numSamples)
-{
+RollingValueStoreEntry* RollingValueStore::createEntry(int numSamples) {
 	RollingValueStoreEntry* ptr;
 	ptr = new RollingValueStoreEntry;
-	ptr->isFull=false;
-	ptr->n=numSamples;
-	ptr->newPosToInsert=0;
+	ptr->isFull = false;
+	ptr->n = numSamples;
+	ptr->newPosToInsert = 0;
 	ptr->samples = new vector<float>(numSamples);
-	ptr->hints = new map<int,float>();
+	ptr->hints = new map<int, float>();
 	return ptr;
 }
 
-
-bool RollingValueStore::addRollingValues(char* key,vector<float>* newSamplesPtr)
-{
-	if(exists(key)==true)
-	{
+bool RollingValueStore::addRollingValues(char* key,
+		vector<float>* newSamplesPtr) {
+	if (exists(key) == true) {
 		RollingValueStoreEntry* entry = store[key];
 		int numElementsForKey = entry->n;
 		int numNewElements = newSamplesPtr->size();
-		int numElementsToInsert = numElementsForKey < numNewElements ? numElementsForKey:numNewElements;
-		int startPos = numNewElements-numElementsForKey >= 0 ? numNewElements-numElementsForKey :0;
-
-
+		int numElementsToInsert =
+				numElementsForKey < numNewElements ?
+						numElementsForKey : numNewElements;
+		int startPos =
+				numNewElements - numElementsForKey >= 0 ?
+						numNewElements - numElementsForKey : 0;
 
 		int i;
-		for(i=0;i<numElementsToInsert;i++)
-		{
+		for (i = 0; i < numElementsToInsert; i++) {
 
-			entry->samples->at((entry->newPosToInsert+i)%numElementsForKey)=newSamplesPtr->at(startPos+i);
+			entry->samples->at((entry->newPosToInsert + i) % numElementsForKey) =
+					newSamplesPtr->at(startPos + i);
 		}
 
-
-		if((entry->newPosToInsert+numElementsToInsert)>=numElementsForKey)
-		{
-			entry->isFull=true;
+		if ((entry->newPosToInsert + numElementsToInsert)
+				>= numElementsForKey) {
+			entry->isFull = true;
 		}
-		entry->newPosToInsert = (entry->newPosToInsert+numElementsToInsert)%numElementsForKey;
+		entry->newPosToInsert = (entry->newPosToInsert + numElementsToInsert)
+				% numElementsForKey;
 
-		updateHints(entry);
+		updateHints(entry, newSamplesPtr);
 		return true;
-	}
-	else
-	{
+	} else {
 		return false;
 	}
 
-
 }
 
-bool RollingValueStore::calculateMovingAvgWithoutHint(int numSamples, RollingValueStoreEntry* current,float* result) {
-
-
+bool RollingValueStore::calculateMovingAvgWithoutHint(int numSamples,
+		RollingValueStoreEntry* current, float* result) {
 
 	int actualNoOfSamples = numSamples > current->n ? current->n : numSamples;
 	actualNoOfSamples =
@@ -140,82 +125,144 @@ bool RollingValueStore::calculateMovingAvgWithoutHint(int numSamples, RollingVal
 
 }
 
-bool RollingValueStore::getRollingAvg(char* key,int numSamples,float* result)
-{
+bool RollingValueStore::getRollingAvg(char* key, int numSamples,
+		float* result) {
 
-		if(exists(key)==true)
-		{
-			RollingValueStoreEntry* current = store[key];
+	if (exists(key) == true) {
+		RollingValueStoreEntry* current = store[key];
 
-			if(current->hints->find(numSamples)==current->hints->end())
-			{
+		if (current->hints->find(numSamples) == current->hints->end()) {
 
-				//not found in hints so calculate
-				return calculateMovingAvgWithoutHint(numSamples, current,result);
+			//not found in hints so calculate
+			return calculateMovingAvgWithoutHint(numSamples, current, result);
 
-			}
-			else
-			{
-				//found in hints so return than value
-				*result= (*current->hints)[numSamples];
-				return true;
-			}
-
+		} else {
+			//found in hints so return than value
+			*result = (*current->hints)[numSamples];
+			return true;
 		}
-		else
-		{
+
+	} else {
+		return false;
+	}
+
+}
+
+bool RollingValueStore::addHint(char* key, int numSamples) {
+	if (exists(key) == true) {
+		map<int, float>* hints = store[key]->hints;
+		float result;
+		bool temp = getRollingAvg(key, numSamples, &result);
+		if (temp == true) {
+			(*hints)[numSamples] = result;
+			return true;
+
+		} else {
 			return false;
 		}
 
-
+	} else {
+		return false;
+	}
 
 }
 
 
-bool RollingValueStore::addHint(char* key,int numSamples)
-{
-		if(exists(key)==true)
-		{
-			map<int,float>* hints= store[key]->hints;
-			float result;
-			bool temp =getRollingAvg(key,numSamples,&result);
-			if(temp==true)
-			{
-				(*hints)[numSamples]=result;
-				return true;
+//TODO Test using old test files
+void RollingValueStore::updateHints(RollingValueStoreEntry* entry,
+		vector<float>* newSamplesPtr) {
+	//size of elements to be inserted
+	int noOfNewElements = newSamplesPtr->size();
+	float sumOfNewElements = 0;
+	map<int, float>* hints = entry->hints;
 
-			}
-			else
-			{
-				return false;
-			}
+	sumOfNewElements = sumElementsInVector(newSamplesPtr);
 
-		}
-		else
-		{
-			return false;
-		}
-
-}
-
-void RollingValueStore::updateHints(RollingValueStoreEntry* ptr)
-{
-
-	map<int,float>* hints= ptr->hints;
-	for(map<int,float>::iterator iter = hints->begin(); iter != hints->end(); ++iter)
+	for (map<int, float>::iterator iter = hints->begin(); iter != hints->end();	++iter)
 	{
 		float result;
-		bool temp = calculateMovingAvgWithoutHint(iter->first,ptr,&result);
-		if(temp==true)
-		{
-			(*hints)[iter->first]=result;
+		int index;
+
+		if (iter->first > noOfNewElements) {
+			if (entry->samples->size() >= iter->first) {
+				float sumOldKElements;
+				float newHintsSum;
+				int hintRangeStartIndex;
+
+				hintRangeStartIndex = entry->newPosToInsert - iter->first;
+				hintRangeStartIndex =
+						hintRangeStartIndex < 0 ?
+								hintRangeStartIndex + entry->n :
+								hintRangeStartIndex;
+				index = hintRangeStartIndex;
+				for (int i = 0; i < iter->first; ++i) {
+					sumOldKElements += entry->samples->at(index);
+					index = (index + 1) % entry->n;
+				}
+				newHintsSum = (iter->first * iter->second) + sumOfNewElements
+						- sumOldKElements;
+				iter->second = newHintsSum / iter->first;
+			}
+			else if (entry->samples->size() + newSamplesPtr->size() > iter->first)
+			{
+				float sumKElementsReplaced = 0;
+				float newHintsSum = 0;
+
+				index = ((entry->samples->size() + newSamplesPtr->size()) - iter->first);
+
+				while(index >= 0){
+					sumKElementsReplaced += sumKElementsReplaced + entry->samples->at(index);
+					--index;
+				}
+				newHintsSum = iter->second * entry->samples->size() + sumOfNewElements - sumKElementsReplaced;
+				iter->second = newHintsSum / iter->first;
+
+			}
+			else
+			{
+				//exisiting size of samples + new sample size is less than or equal
+				//  to size of the hints
+				iter->second = (iter->second * entry->samples->size()
+						+ sumOfNewElements)
+						/ (entry->samples->size() + newSamplesPtr->size());
+			}
 		}
 		else
 		{
-			//something wrong in recalculating hints. removing the hint key,so next time it is re-computed
-			hints->erase(iter->first);
+			float sumHintSize = 0;
+
+			index = newSamplesPtr->size() - 1;
+
+			for (int i = 0; i < iter->first; ++i) {
+				sumHintSize += newSamplesPtr->at(index);
+				--index;
+			}
+			iter->second = sumHintSize / iter->first;
 		}
+		/* old code
+		 bool temp = calculateMovingAvgWithoutHint(iter->first,ptr,&result);
+		 if(temp==true)
+		 {
+		 (*hints)[iter->first]=result;
+		 }
+		 else
+		 {
+		 //something wrong in recalculating hints. removing the hint key,so next time it is re-computed
+		 hints->erase(iter->first);
+		 }*/
 
 	}
 
+}
+
+float RollingValueStore::sumElementsInVector(vector<float> * values) {
+	float sum = 0;
+	int i = 0;
+	int length = values->size();
+
+	for (i = 0; i < length; i++) {
+		sum += values->at(i);
+	}
+
+	return sum;
 }
