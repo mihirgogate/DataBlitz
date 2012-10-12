@@ -26,6 +26,7 @@ enum InputType
 	declmovavg,
 	addsamples,
 	movavg,
+	retrieve
 };
 
 class StringParserandInvoker {
@@ -44,6 +45,7 @@ private:
 	vector<float> splitNumbers(string token);
 	string movingAvg(vector<string> tokens);
 	map<string,InputType> enumMapping;
+	string retrieveN(vector<string> tokens);
 public:
 	StringParserandInvoker();
 	StringParserandInvoker(IntegerStore, RollingValueStore);

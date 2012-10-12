@@ -94,6 +94,9 @@ string StringParserandInvoker::operate(string message)
 	case movavg:
 		returnVal=movingAvg(tokens);
 		break;
+	case retrieve:
+		returnVal = retrieveN(tokens);
+		break;
 	default:
 		returnVal="Invalid input";
 		break;
@@ -101,6 +104,46 @@ string StringParserandInvoker::operate(string message)
 	return returnVal;
 
 }
+
+string StringParserandInvoker:: retrieveN(vector<string> tokens)
+{
+	if(tokens.size()==4)
+	  {
+				str=(char*)tokens[1].c_str();
+				int lowIndex=atoi(tokens[2].c_str());
+				int highIndex=atoi(tokens[3].c_str());
+				vector<float>* result;
+				bool isSuccess= rvs.retrieve(str,lowIndex,highIndex,&result);
+				int i=0;
+				if(isSuccess)
+				{
+					std::stringstream out;
+					printf("%d\n",result->size());
+					for(i=0;i<result->size();i++)
+					{
+						//printf("%f",result->at(i));
+						out<<result->at(i);
+						if(i!=(result->size()-1))
+						{
+							out<<",";
+						}
+
+					}
+					fflush(stdout);
+					return out.str();
+				}
+				else {
+					return "Invalid parameters supplied";
+				}
+
+	  }
+	  else
+	  {
+		return "Invalid number of parameters. /n Usage RETRIEVE <key> <lowIndex> <highIndex>";
+	  }
+
+}
+
 
 string StringParserandInvoker:: put(vector<string> tokens)
 {
@@ -316,6 +359,8 @@ enumMapping["DECLSAMPLES"]=declsamples;
 enumMapping["DECLMOVAVG"]=declmovavg;
 enumMapping["ADDSAMPLES"]=addsamples;
 enumMapping["MOVAVG"]=movavg;
+enumMapping["RETRIEVE"]=retrieve;
+
 }
 
 StringParserandInvoker::~StringParserandInvoker() {

@@ -25,6 +25,53 @@ void RollingValueStore::deleteEntry(RollingValueStoreEntry* ptr) {
 
 }
 
+
+bool RollingValueStore::retrieve(char* key,int low,int high,vector<float>** ptr)
+{
+	printf("Reached here\n");
+	if(exists(key)==true)
+	{
+
+		vector<float>* samples= store[key]->samples;
+		int numSamples = samples->size();
+
+		if(numSamples<low || (high<low)){
+
+			return false;
+		}
+		else {
+
+			int maxIndex = high>(numSamples-1)?numSamples-1:high;
+
+			int i=0;
+
+			*ptr= new vector<float>(maxIndex-low+1);
+
+
+
+			for(i=low;i<=high&&i<numSamples;i++)
+			{
+				(*ptr)->at(i-low)=samples->at(i);
+				//printf("%f",ptr->at(i-low));
+			}
+
+			fflush(stdout);
+
+			return true;
+
+		}
+
+
+	}
+	else
+	{
+		printf("Key does not exist\n");
+		return false;
+	}
+
+}
+
+
 void RollingValueStore::declareKey(char* key,int numSamples)
 {
 	RollingValueStoreEntry* newEntry=NULL;
@@ -219,3 +266,5 @@ void RollingValueStore::updateHints(RollingValueStoreEntry* ptr)
 	}
 
 }
+
+

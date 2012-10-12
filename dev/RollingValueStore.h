@@ -41,6 +41,7 @@ public:
 	bool exists(char* key);
 	bool getRollingAvg(char* key,int numSamples,float* result);
 	bool addHint(char* key,int numSamples);
+	bool retrieve(char* key,int low,int high,vector<float>** ptr);
 };
 
 
