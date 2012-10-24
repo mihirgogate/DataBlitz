@@ -207,27 +207,26 @@ bool RollingValueStore::addRollingValues(char* key,vector<float>* newSamplesPtr)
 bool RollingValueStore::calculateMovingAvgWithoutHint(int numSamples, RollingValueStoreEntry* current,float* result) {
 
 
-    printf("calculating moving avg without hints");
-    fflush(stdout);
-	int actualNoOfSamples = numSamples > current->n ? current->n : numSamples;
-	actualNoOfSamples =
-			(current->isFull == false) ?
-					current->newPosToInsert : actualNoOfSamples;
+	printf("\nNumSamples = %d,TotSize =%d, IsFull = %d , newPosToInsert = %d\n",numSamples,current->n,current->isFull,current->newPosToInsert);
+	int actualNoOfSamples = getActualNumberOfSamples(current);
+	printf("\nActual no of samples = %d\n",actualNoOfSamples);
+	int numSamplesToTakeAverageOf = numSamples < actualNoOfSamples ? numSamples : actualNoOfSamples;
+	printf("\nActual no of samples = %d\n",numSamplesToTakeAverageOf);
 	float sum = 0;
 	int i = 0;
 	int ind = current->newPosToInsert - 1;
-	for (i = 0; i < actualNoOfSamples; i++) {
+	for (i = 0; i < numSamplesToTakeAverageOf; i++) {
 		if (ind < 0) {
 			ind = ind + current->n;
 		}
 		sum += current->samples->at(ind);
 		ind = ind - 1;
 	}
-	if (actualNoOfSamples == 0) {
+	if (numSamplesToTakeAverageOf == 0) {
 		//calculating average in this case would cause a divide by zero exception hence return error
 		return false;
 	} else {
-		*result = (sum / actualNoOfSamples);
+		*result = (sum / numSamplesToTakeAverageOf);
 		return true;
 	}
 
