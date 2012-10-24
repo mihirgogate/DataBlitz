@@ -32,8 +32,8 @@ enum InputType
 
 class StringParserandInvoker {
 private:
-	IntegerStore is;
-	RollingValueStore rvs;
+	IntegerStore* is;
+	RollingValueStore* rvs;
 	char* str;
 	void mapValues();
 	string put(vector<string> tokens);
@@ -51,7 +51,7 @@ private:
 	string removeNewLineCharactersAtEndOfLine(string* message);
 public:
 	StringParserandInvoker();
-	StringParserandInvoker(IntegerStore, RollingValueStore);
+	StringParserandInvoker(IntegerStore* is, RollingValueStore* rvs);
 	string operate(string);
 	virtual ~StringParserandInvoker();
 };

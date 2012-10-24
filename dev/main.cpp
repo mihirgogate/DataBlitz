@@ -6,25 +6,43 @@
 #include "IntegerStore.h"
 #include "StringParserandInvoker.h"
 #include "server.h"
+#include "Store.h"
 
 using namespace std;
 
 
 int main(int argc, char *argv[])
 {
+
 	if (argc != 2)
 	{
 	  fprintf (stderr, "Error: Usage : %s [port]\n", argv[0]);
 	  return 1;
 	}
 
-	IntegerStore is;
-	RollingValueStore rvs;
+	Store* s = new Store();
+	IntegerStore* is = new IntegerStore(s);
+	RollingValueStore* rvs = new RollingValueStore(s);
 	StringParserandInvoker spi(is,rvs);
 
-	server_main(argv[1],&spi);
+	server_main(argv[1l],&spi);
 
-/*  Sample tests below
+/*
+ * Sample tests for Store below
+	string a = "test";
+	int* ptr = new int(2);
+	bool is = s.exists(&a[0],IntegerValue);
+	is = s.put(&a[0],ptr,IntegerValue);
+	is = s.exists(&a[0],IntegerValue);
+	int* ans;
+	is  = s.get(&a[0],(void**)&ans,IntegerValue);
+	ptr = new int(5);
+	is = s.put(&a[0],ptr,IntegerValue);
+	is  = s.get(&a[0],(void**)&ans,IntegerValue);
+	printf("%d,%d",is,*ans);
+
+ *
+ *  Sample tests below
 	string message="      PUT    test 15      ";
 	string returnMessage = spi.operate(message);
 	cout << returnMessage <<endl;

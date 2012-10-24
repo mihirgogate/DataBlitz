@@ -1,6 +1,7 @@
 
 #include<map>
 #include<string>
+#include "Store.h"
 
 #ifndef DATASTORE_H_
 #define DATASTORE_H_
@@ -11,15 +12,14 @@ class IntegerStore {
 
 private :
 
-	map<string,int> stats;
+	Store* store;
 
 public:
-	IntegerStore();
-	bool get(const char *c,int* result);
-	void put(const char *c,int value);
-	bool increment(const char *c,int value,int* result);
-	bool decrement(const char *c,int value,int* result);
-	bool exists(const char *c);
+	IntegerStore(Store* store);
+	bool get(char *c,int** result);
+	bool put(char *c,int value);
+	bool increment(char *c,int value,int** result);
+	bool decrement(char *c,int value,int** result);
 	virtual ~IntegerStore();
 };
 

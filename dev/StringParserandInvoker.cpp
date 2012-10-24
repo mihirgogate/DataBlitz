@@ -16,14 +16,16 @@
 
 StringParserandInvoker::StringParserandInvoker() {
 
-	str=NULL;
+	this->str=NULL;
+	this->is = NULL;
+	this->rvs = NULL;
 
 }
 
-StringParserandInvoker::StringParserandInvoker(IntegerStore is, RollingValueStore rs) {
+StringParserandInvoker::StringParserandInvoker(IntegerStore* is, RollingValueStore* rs) {
 	this->is=is;
 	this->rvs=rs;
-	str=NULL;
+	this->str=NULL;
 }
 
 string StringParserandInvoker::removeNewLineCharactersAtEndOfLine(string* message)
@@ -143,7 +145,7 @@ string StringParserandInvoker:: getvariance(vector<string> tokens)
 	{
 		str=(char*)tokens[1].c_str();
 		float result;
-		bool isValid=rvs.getVariance(str,&result);
+		bool isValid=rvs->getVariance(str,&result);
 		if(isValid)
 		{
 			std::stringstream out;
@@ -170,7 +172,7 @@ string StringParserandInvoker:: retrieveN(vector<string> tokens)
 				int lowIndex=atoi(tokens[2].c_str());
 				int highIndex=atoi(tokens[3].c_str());
 				vector<float>* result;
-				bool isSuccess= rvs.retrieve(str,lowIndex,highIndex,&result);
+				bool isSuccess= rvs->retrieve(str,lowIndex,highIndex,&result);
 				int i=0;
 				if(isSuccess)
 				{
@@ -208,8 +210,14 @@ string StringParserandInvoker:: put(vector<string> tokens)
 			{
 				str=(char*)tokens[1].c_str();
 				int number=atoi(tokens[2].c_str());
-				is.put(str,number);
-				return "Value added successfully!!";
+				bool isSuccess = is->put(str,number);
+				if(isSuccess) {
+					return "Value added successfully!!";
+				}
+				else {
+					return "A value of another type already exists at this location";
+				}
+
 			}
 			else
 			{
@@ -223,12 +231,12 @@ string StringParserandInvoker:: get(vector<string> tokens)
 	if(tokens.size()==2)
 			{
 				str=(char*)tokens[1].c_str();
-				int result;
-				bool isValid=is.get(str,&result);
+				int* result;
+				bool isValid=is->get(str,&result);
 				if(isValid)
 				{
 					std::stringstream out;
-					out<<result;
+					out<<*result;
 					return out.str();
 				}
 				else
@@ -249,12 +257,12 @@ string StringParserandInvoker:: increment(vector<string> tokens)
 			{
 				str=(char*)tokens[1].c_str();
 				int number=atoi(tokens[2].c_str());
-				int result;
-				bool isValid=is.increment(str,number,&result);
+				int* result;
+				bool isValid=is->increment(str,number,&result);
 				if(isValid)
 				{
 					std::stringstream out;
-					out<<result;
+					out<<*result;
 					return out.str();
 				}
 				else
@@ -276,12 +284,12 @@ string StringParserandInvoker:: decrement(vector<string> tokens)
 			{
 				str=(char*)tokens[1].c_str();
 				int number=atoi(tokens[2].c_str());
-				int result;
-				bool isValid=is.decrement(str,number,&result);
+				int* result;
+				bool isValid=is->decrement(str,number,&result);
 				if(isValid)
 				{
 					std::stringstream out;
-					out<<result;
+					out<<*result;
 					return out.str();
 				}
 				else
@@ -304,8 +312,14 @@ string StringParserandInvoker:: declSamples(vector<string> tokens)
 
 			str=(char*)tokens[1].c_str();
 			int number=atoi(tokens[2].c_str());
-			rvs.declareKey(str,number);
-			return "Successful";
+			bool isSuccess = rvs->declareKey(str,number);
+			if(isSuccess) {
+				return "Successful";
+			}
+			else {
+				return "The key is already taken";
+			}
+
 	}
 	return "Invalid number of parameters. /n Usage DECLSAMPLES <data> <value>";
 }
@@ -316,7 +330,7 @@ string StringParserandInvoker:: declMovAvg(vector<string> tokens)
 	{
 			str=(char*)tokens[1].c_str();
 			int number=atoi(tokens[2].c_str());
-			bool isTrue=rvs.addHint(str,number);
+			bool isTrue=rvs->addHint(str,number);
 			if(isTrue)
 			{
 			return "Successful";
@@ -336,7 +350,7 @@ string StringParserandInvoker:: addSamples(vector<string> tokens)
 		{
 				str=(char*)tokens[1].c_str();
 				numbers=splitNumbers(tokens[2]);
-				bool isTrue=rvs.addRollingValues(str,&numbers);
+				bool isTrue=rvs->addRollingValues(str,&numbers);
 				if(isTrue)
 				{
 				return "Successful";
@@ -388,7 +402,7 @@ string StringParserandInvoker:: movingAvg(vector<string> tokens)
 		str=(char*)tokens[1].c_str();
 		int number=atoi(tokens[2].c_str());
 		float result;
-		bool isValid=rvs.getRollingAvg(str,number,&result);
+		bool isValid=rvs->getRollingAvg(str,number,&result);
 		if(isValid)
 		{
 			std::stringstream out;
