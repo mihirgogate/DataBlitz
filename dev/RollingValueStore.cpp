@@ -29,13 +29,6 @@ void RollingValueStore::deleteEntry(RollingValueStoreEntry* ptr) {
 bool RollingValueStore :: getVariance(char* key,float* result)
 {
 
-	int i=0;
-	for(i=0;key[i]!='\0';i++);
-
-	key[i-2]='\0';
-
-	fflush(stdout);
-
     if(exists(key)==true)
     {
 

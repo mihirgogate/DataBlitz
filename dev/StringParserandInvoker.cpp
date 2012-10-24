@@ -26,12 +26,40 @@ StringParserandInvoker::StringParserandInvoker(IntegerStore is, RollingValueStor
 	str=NULL;
 }
 
+string StringParserandInvoker::removeNewLineCharactersAtEndOfLine(string* message)
+{
+	int len = message->size();
+	int lenToReduce = 0;
+	string temp;
+
+	if(message->at(len-2)=='\r' && message->at(len-1)=='\n') //Linux machines
+	{
+		lenToReduce=2;
+	}
+	else if(message->at(len-1)=='\n') { // windows machines
+		lenToReduce=1;
+	}
+
+	if(lenToReduce!=0) {
+		temp = message->substr(0,len-lenToReduce);
+	}
+	else {
+		temp = *message;
+	}
+
+	return temp;
+
+}
+
 string StringParserandInvoker::operate(string message)
 {
+
 	vector<string> tokens;
 	string buf="";
 	unsigned int i=0;
 	bool additionalSpace=true;
+
+	message = removeNewLineCharactersAtEndOfLine(&message);
 	while(i<message.length())
 	{
 		if(message[i]!=' ')

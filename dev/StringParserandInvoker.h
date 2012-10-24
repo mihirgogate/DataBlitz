@@ -48,6 +48,7 @@ private:
 	map<string,InputType> enumMapping;
 	string retrieveN(vector<string> tokens);
 	string getvariance(vector<string> tokens);
+	string removeNewLineCharactersAtEndOfLine(string* message);
 public:
 	StringParserandInvoker();
 	StringParserandInvoker(IntegerStore, RollingValueStore);
