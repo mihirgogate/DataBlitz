@@ -1,7 +1,7 @@
 #include "IntegerStore.h"
 
-IntegerStore::IntegerStore() {
-	// TODO Auto-generated constructor stub
+IntegerStore::IntegerStore(Store* store) {
+	this->store = store;
 
 }
 
@@ -10,58 +10,40 @@ IntegerStore::~IntegerStore() {
 }
 
 
-bool IntegerStore::get(const char* query,int* result){
+bool IntegerStore::get(char* query,int** result){
 
-	if(exists(query)==false)
-		{
-			return false;
-		}
-		else
-		{
-			*result=stats[query];
-			return true;
-		}
-}
-
-void IntegerStore::put(const char* query,int val){
-
-	stats[query]=val;
-
-
-}
-
-bool IntegerStore::increment(const char* query,int val,int *result)
-{
-
-	if(exists(query)==false)
-	{
-		return false;
-	}
-	else
-	{
-		stats[query] = stats[query] + val;
-		*result=stats[query];
+	bool exists = this->store->get(query,(void**)result,IntegerValue);
+	if(exists){
 		return true;
 	}
+	else {
+		return false;
+	}
 }
 
-bool IntegerStore::decrement(const char* query,int val,int *result){
+bool IntegerStore::put(char* query,int val){
+
+	int* valPtr = new int(val);
+	bool success = this->store->put(query,valPtr,IntegerValue);
+	return success;
+
+}
+
+bool IntegerStore::increment(char* query,int val,int** result)
+{
+	bool exists = this->store->get(query,(void**)&result,IntegerValue);
+	if(exists){
+		*result = *result + val;
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+bool IntegerStore::decrement(char* query,int val,int** result){
 
 	return increment(query,-val,result);
 }
 
-
-
-bool IntegerStore::exists(const char* query){
-
-	      if(stats.find(query)==stats.end())
-			{
-				return false;
-			}
-			else
-			{
-				return true;
-			}
-
-}
 
