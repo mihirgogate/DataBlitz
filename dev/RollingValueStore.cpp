@@ -7,6 +7,7 @@
 
 #include "RollingValueStore.h"
 #include<iostream>
+#include<string>
 
 RollingValueStore::RollingValueStore() {
 	// TODO Auto-generated constructor stub
@@ -25,6 +26,62 @@ void RollingValueStore::deleteEntry(RollingValueStoreEntry* ptr) {
 
 }
 
+bool RollingValueStore :: getVariance(char* key,float* result)
+{
+
+	int i=0;
+	for(i=0;key[i]!='\0';i++);
+
+	key[i-2]='\0';
+
+	fflush(stdout);
+
+    if(exists(key)==true)
+    {
+
+        RollingValueStoreEntry* current = store[key];
+        float avg;
+        int ind = current->newPosToInsert - 1;
+
+        if (ind < 0) {
+            ind = ind + current->n;
+        }
+        int divider=ind+1;
+        //bool isTrue=calculateMovingAvgWithoutHint(divider,current,&avg);
+        bool isTrue=getRollingAvg(key,current->samples->size(),&avg);
+        if(isTrue)
+        {
+            float sum = 0;
+                int i = 0;
+                float num=0;
+                for (i = 0; i < current->samples->size(); i++) {
+                    if (ind < 0) {
+                        ind = ind + current->n;
+                    }
+                    num=current->samples->at(ind)-avg;
+                    sum +=num*num ;
+                    ind = ind - 1;
+                }
+                printf("%f\n",avg);
+                *result=sum/(float)(current->samples->size());
+                printf("%f\n",*result);
+                fflush(stdout);
+                return true;
+        }
+        else
+        {
+            return false;  //Returning false as the actual number of samples is 0
+        }
+    }
+    else
+    {
+        return false;
+    }
+}
+
+
+
+
 
 bool RollingValueStore::retrieve(char* key,int low,int high,vector<float>** ptr)
 {
@@ -42,6 +99,7 @@ bool RollingValueStore::retrieve(char* key,int low,int high,vector<float>** ptr)
 		else {
 
 			int maxIndex = high>(numSamples-1)?numSamples-1:high;
+
 
 			int i=0;
 

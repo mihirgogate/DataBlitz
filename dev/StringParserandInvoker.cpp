@@ -97,6 +97,10 @@ string StringParserandInvoker::operate(string message)
 	case retrieve:
 		returnVal = retrieveN(tokens);
 		break;
+	case variance:
+		returnVal=getvariance(tokens);
+		break;
+
 	default:
 		returnVal="Invalid input";
 		break;
@@ -104,6 +108,31 @@ string StringParserandInvoker::operate(string message)
 	return returnVal;
 
 }
+
+string StringParserandInvoker:: getvariance(vector<string> tokens)
+{
+	if(tokens.size()==2)
+	{
+		str=(char*)tokens[1].c_str();
+		float result;
+		bool isValid=rvs.getVariance(str,&result);
+		if(isValid)
+		{
+			std::stringstream out;
+			out<<result;
+			return out.str();
+		}
+		else
+		{
+			return "Value not found";
+		}
+	}
+	else
+	{
+		return "Invalid number of parameters. /n Usage VARIANCE <data>";
+	}
+}
+
 
 string StringParserandInvoker:: retrieveN(vector<string> tokens)
 {
@@ -360,6 +389,7 @@ enumMapping["DECLMOVAVG"]=declmovavg;
 enumMapping["ADDSAMPLES"]=addsamples;
 enumMapping["MOVAVG"]=movavg;
 enumMapping["RETRIEVE"]=retrieve;
+enumMapping["VARIANCE"]=variance;
 
 }
 
