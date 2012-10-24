@@ -8,6 +8,7 @@
 #include "RollingValueStore.h"
 #include<iostream>
 #include<string>
+#include<math.h>
 
 RollingValueStore::RollingValueStore(Store* store) {
 	this->store = store;
@@ -69,6 +70,18 @@ bool RollingValueStore :: getVariance(char* key,float* result)
     {
         return false;
     }
+}
+
+bool RollingValueStore :: getStdDev(char* key,float* result)
+{
+	bool isVarianceSuccessfullyRetrieved  = getVariance(key,result);
+	if(isVarianceSuccessfullyRetrieved) {
+		*result = sqrt(*result);
+		return true;
+	}
+	else {
+		return false;
+	}
 }
 
 int RollingValueStore::getActualNumberOfSamples(RollingValueStoreEntry* rollingValueStoreEntry) {

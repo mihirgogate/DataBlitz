@@ -27,7 +27,8 @@ enum InputType
 	addsamples,
 	movavg,
 	retrieve,
-	variance
+	variance,
+	stddev
 };
 
 class StringParserandInvoker {
@@ -48,6 +49,7 @@ private:
 	map<string,InputType> enumMapping;
 	string retrieveN(vector<string> tokens);
 	string getvariance(vector<string> tokens);
+	string getstddev(vector<string> tokens);
 	string removeNewLineCharactersAtEndOfLine(string* message);
 public:
 	StringParserandInvoker();

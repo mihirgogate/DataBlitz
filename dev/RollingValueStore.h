@@ -44,6 +44,7 @@ public:
 	bool addHint(char* key,int numSamples);
 	bool retrieve(char* key,int low,int high,vector<float>** ptr);
 	bool getVariance(char* key,float* result);
+	bool getStdDev(char* key,float* result);
 };
 
 
