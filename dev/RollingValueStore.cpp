@@ -174,14 +174,57 @@ RollingValueStoreEntry* RollingValueStore::createEntry(int numSamples)
 	ptr->newPosToInsert=0;
 	ptr->samples = new vector<float>(numSamples);
 	ptr->hints = new map<int,float>();
+	ptr->lifetimeCount =0;
+	ptr->lifetimeSum =0;
 	return ptr;
 }
 
+bool RollingValueStore::getLifetimeAverage(char* key,float* result){
+	RollingValueStoreEntry* entry=NULL;
+	bool exists = store->get(key,(void**)&entry,RollingValue);
+	if(exists){
+		if(entry->lifetimeCount == 0) {
+			return false;
+		}
+		else {
+			*result = (entry->lifetimeSum)/(entry->lifetimeCount);
+			return true;
+		}
+	}
+	else {
+		return false;
+	}
+}
+
+void RollingValueStore::updateLifeTimeValues(char* key,vector<float>* newSamplesPtr)
+{
+	RollingValueStoreEntry* entry=NULL;
+	bool exists = store->get(key,(void**)&entry,RollingValue);
+	if(exists) {
+		float sum = 0;
+		int count = 0;
+		int i;
+		for(i=0;i<newSamplesPtr->size();i++)
+		{
+			sum+=newSamplesPtr->at(i);
+			count+=1;
+		}
+
+		//now update the lifetime sum and count
+		entry->lifetimeCount += count;
+		entry->lifetimeSum += sum;
+		printf("\nLifetimeSum = %f , LifetimeCount = %d \n",entry->lifetimeSum,entry->lifetimeCount);
+	}
+}
 
 bool RollingValueStore::addRollingValues(char* key,vector<float>* newSamplesPtr)
 {
 	RollingValueStoreEntry* entry=NULL;
+
+	updateLifeTimeValues(key,newSamplesPtr);
+
 	bool exists = store->get(key,(void**)&entry,RollingValue);
+
 
 	if(exists)
 	{

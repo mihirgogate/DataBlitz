@@ -22,6 +22,8 @@ struct RollingValueStoreEntry
 	map<int,float>* hints;
 	bool isFull;
 	int newPosToInsert;
+	float lifetimeSum;
+	int lifetimeCount;
 };
 
 class RollingValueStore {
@@ -33,6 +35,7 @@ private:
 	void updateHints(RollingValueStoreEntry* ptr);
 	bool calculateMovingAvgWithoutHint(int numSamples,RollingValueStoreEntry* current,float* result);
 	int getActualNumberOfSamples(RollingValueStoreEntry* current);
+	void updateLifeTimeValues(char* key,vector<float>* newSamplesPtr);
 
 public:
 	RollingValueStore(Store* store);
@@ -45,6 +48,7 @@ public:
 	bool retrieve(char* key,int low,int high,vector<float>** ptr);
 	bool getVariance(char* key,float* result);
 	bool getStdDev(char* key,float* result);
+	bool getLifetimeAverage(char* key,float* result);
 };
 
 

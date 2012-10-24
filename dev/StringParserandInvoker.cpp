@@ -133,12 +133,39 @@ string StringParserandInvoker::operate(string message)
 	case stddev:
 		returnVal=getstddev(tokens);
 		break;
+	case lifetimeavg:
+		returnVal=getlifetimeavg(tokens);
+		break;
 	default:
 		returnVal="Invalid input";
 		break;
 	}
 	return returnVal;
 
+}
+
+string StringParserandInvoker:: getlifetimeavg(vector<string> tokens)
+{
+	if(tokens.size()==2)
+	{
+		str=(char*)tokens[1].c_str();
+		float result;
+		bool isValid=rvs->getLifetimeAverage(str,&result);
+		if(isValid)
+		{
+			std::stringstream out;
+			out<<result;
+			return out.str();
+		}
+		else
+		{
+			return "Key not found or number of elements is 0";
+		}
+	}
+	else
+	{
+		return "Invalid number of parameters. /n Usage LIFETIMEAVG <data>";
+	}
 }
 
 string StringParserandInvoker:: getvariance(vector<string> tokens)
@@ -156,7 +183,7 @@ string StringParserandInvoker:: getvariance(vector<string> tokens)
 		}
 		else
 		{
-			return "Value not found or Average is 0";
+			return "Key not found or number of elements is 0";
 		}
 	}
 	else
@@ -180,7 +207,7 @@ string StringParserandInvoker:: getstddev(vector<string> tokens)
 		}
 		else
 		{
-			return "Value not found or Average is 0";
+			return "Key not found or number of elements is 0";
 		}
 	}
 	else
@@ -459,6 +486,7 @@ enumMapping["MOVAVG"]=movavg;
 enumMapping["RETRIEVE"]=retrieve;
 enumMapping["VARIANCE"]=variance;
 enumMapping["STDDEV"]=stddev;
+enumMapping["LIFETIMEAVG"]=lifetimeavg;
 
 }
 

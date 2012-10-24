@@ -28,7 +28,8 @@ enum InputType
 	movavg,
 	retrieve,
 	variance,
-	stddev
+	stddev,
+	lifetimeavg
 };
 
 class StringParserandInvoker {
@@ -50,6 +51,7 @@ private:
 	string retrieveN(vector<string> tokens);
 	string getvariance(vector<string> tokens);
 	string getstddev(vector<string> tokens);
+	string getlifetimeavg(vector<string> tokens);
 	string removeNewLineCharactersAtEndOfLine(string* message);
 public:
 	StringParserandInvoker();
