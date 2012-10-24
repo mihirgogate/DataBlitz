@@ -9,6 +9,7 @@
 #include<string>
 #include<map>
 #include<vector>
+#include "Store.h"
 
 using namespace std;
 #ifndef ROLLINGVALUESTORE_H_
@@ -26,16 +27,17 @@ struct RollingValueStoreEntry
 class RollingValueStore {
 private:
 
-	map<string,RollingValueStoreEntry*> store;
+	Store* store;
 	RollingValueStoreEntry* createEntry(int numSamples);
 	void deleteEntry(RollingValueStoreEntry* ptr);
 	void updateHints(RollingValueStoreEntry* ptr);
 	bool calculateMovingAvgWithoutHint(int numSamples,RollingValueStoreEntry* current,float* result);
+	int getActualNumberOfSamples(RollingValueStoreEntry* current);
 
 public:
-	RollingValueStore();
+	RollingValueStore(Store* store);
 	virtual ~RollingValueStore();
-	void declareKey(char* key,int numSamples);
+	bool declareKey(char* key,int numSamples);
 	bool addRollingValues(char* key,vector<float>* ptr);
 	bool exists(char* key);
 	bool getRollingAvg(char* key,int numSamples,float* result);

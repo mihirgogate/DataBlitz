@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 
 	Store* s = new Store();
 	IntegerStore* is = new IntegerStore(s);
-	RollingValueStore* rvs = new RollingValueStore();
+	RollingValueStore* rvs = new RollingValueStore(s);
 	StringParserandInvoker spi(is,rvs);
 
 	server_main(argv[1l],&spi);

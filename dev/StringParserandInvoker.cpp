@@ -210,8 +210,14 @@ string StringParserandInvoker:: put(vector<string> tokens)
 			{
 				str=(char*)tokens[1].c_str();
 				int number=atoi(tokens[2].c_str());
-				is->put(str,number);
-				return "Value added successfully!!";
+				bool isSuccess = is->put(str,number);
+				if(isSuccess) {
+					return "Value added successfully!!";
+				}
+				else {
+					return "A value of another type already exists at this location";
+				}
+
 			}
 			else
 			{
@@ -306,8 +312,14 @@ string StringParserandInvoker:: declSamples(vector<string> tokens)
 
 			str=(char*)tokens[1].c_str();
 			int number=atoi(tokens[2].c_str());
-			rvs->declareKey(str,number);
-			return "Successful";
+			bool isSuccess = rvs->declareKey(str,number);
+			if(isSuccess) {
+				return "Successful";
+			}
+			else {
+				return "The key is already taken";
+			}
+
 	}
 	return "Invalid number of parameters. /n Usage DECLSAMPLES <data> <value>";
 }

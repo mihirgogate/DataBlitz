@@ -9,8 +9,8 @@
 #include<iostream>
 #include<string>
 
-RollingValueStore::RollingValueStore() {
-	// TODO Auto-generated constructor stub
+RollingValueStore::RollingValueStore(Store* store) {
+	this->store = store;
 
 }
 
@@ -28,26 +28,25 @@ void RollingValueStore::deleteEntry(RollingValueStoreEntry* ptr) {
 
 bool RollingValueStore :: getVariance(char* key,float* result)
 {
-
-    if(exists(key)==true)
+	RollingValueStoreEntry* current;
+    bool exists = store->get(key,(void**)&current,RollingValue);
+    if(exists)
     {
-
-        RollingValueStoreEntry* current = store[key];
         float avg;
         int ind = current->newPosToInsert - 1;
 
         if (ind < 0) {
             ind = ind + current->n;
         }
-        int divider=ind+1;
-        //bool isTrue=calculateMovingAvgWithoutHint(divider,current,&avg);
-        bool isTrue=getRollingAvg(key,current->samples->size(),&avg);
+
+        int actualNoOfSamples = getActualNumberOfSamples(current);
+        bool isTrue=getRollingAvg(key,actualNoOfSamples,&avg);
         if(isTrue)
         {
-            float sum = 0;
+            	float sum = 0;
                 int i = 0;
                 float num=0;
-                for (i = 0; i < current->samples->size(); i++) {
+                for (i = 0; i < actualNoOfSamples; i++) {
                     if (ind < 0) {
                         ind = ind + current->n;
                     }
@@ -56,7 +55,7 @@ bool RollingValueStore :: getVariance(char* key,float* result)
                     ind = ind - 1;
                 }
                 printf("%f\n",avg);
-                *result=sum/(float)(current->samples->size());
+                *result=sum/(float)(actualNoOfSamples);
                 printf("%f\n",*result);
                 fflush(stdout);
                 return true;
@@ -72,26 +71,27 @@ bool RollingValueStore :: getVariance(char* key,float* result)
     }
 }
 
-
-
-
+int RollingValueStore::getActualNumberOfSamples(RollingValueStoreEntry* rollingValueStoreEntry) {
+	return (rollingValueStoreEntry->isFull == false) ? rollingValueStoreEntry->newPosToInsert : rollingValueStoreEntry->samples->size();
+}
 
 bool RollingValueStore::retrieve(char* key,int low,int high,vector<float>** ptr)
 {
-	printf("Reached here\n");
-	if(exists(key)==true)
+	RollingValueStoreEntry* current;
+	bool exists = store->get(key,(void**)&current,RollingValue);
+	if(exists)
 	{
 
-		vector<float>* samples= store[key]->samples;
-		int numSamples = samples->size();
+		vector<float>* samples= current->samples;
+		int actualNoOfSamples = getActualNumberOfSamples(current);
 
-		if(numSamples<low || (high<low)){
+		if(actualNoOfSamples<=low || (high<low) || (low<0) || (high<0)){
 
 			return false;
 		}
 		else {
 
-			int maxIndex = high>(numSamples-1)?numSamples-1:high;
+			int maxIndex = high>(actualNoOfSamples-1)?actualNoOfSamples-1:high;
 
 
 			int i=0;
@@ -100,7 +100,7 @@ bool RollingValueStore::retrieve(char* key,int low,int high,vector<float>** ptr)
 
 
 
-			for(i=low;i<=high&&i<numSamples;i++)
+			for(i=low;i<=high&&i<actualNoOfSamples;i++)
 			{
 				(*ptr)->at(i-low)=samples->at(i);
 				//printf("%f",ptr->at(i-low));
@@ -123,42 +123,34 @@ bool RollingValueStore::retrieve(char* key,int low,int high,vector<float>** ptr)
 }
 
 
-void RollingValueStore::declareKey(char* key,int numSamples)
+bool RollingValueStore::declareKey(char* key,int numSamples)
 {
-	RollingValueStoreEntry* newEntry=NULL;
+	RollingValueStoreEntry* current;
+	bool exists = store->get(key,(void**)&current,RollingValue);
 
-	if(exists(key)==true)
+	RollingValueStoreEntry* newEntry=newEntry = createEntry(numSamples);
+	bool isSuccess = store->put(key,newEntry,RollingValue);
+	if(isSuccess)
 	{
-		//flush the earlier entry and create a new one
-		RollingValueStoreEntry* ptr = store[key];
-		deleteEntry(ptr);
-		newEntry = createEntry(numSamples);
+		//free the memory of the earlier entry if it exists
+		if(exists) {
+			deleteEntry(current);
+		}
+
+		return true;
 	}
 	else
 	{
-		//create a new entry
-		newEntry = createEntry(numSamples);
+		//could not add the rolling value to the store so free the memory
+		deleteEntry(newEntry);
+		return false;
 
 	}
-	cout << key << endl;
-	store.insert(pair<string,RollingValueStoreEntry*>(key,newEntry));
-	//store[key]=newEntry;
+
+
 }
 
 
-
-bool RollingValueStore::exists(char* key)
-{
-
-	if(store.find(key)==store.end())
-		{
-			return false;
-		}
-				else
-		{
-				return true;
-		}
-}
 
 RollingValueStoreEntry* RollingValueStore::createEntry(int numSamples)
 {
@@ -175,9 +167,11 @@ RollingValueStoreEntry* RollingValueStore::createEntry(int numSamples)
 
 bool RollingValueStore::addRollingValues(char* key,vector<float>* newSamplesPtr)
 {
-	if(exists(key)==true)
+	RollingValueStoreEntry* entry=NULL;
+	bool exists = store->get(key,(void**)&entry,RollingValue);
+
+	if(exists)
 	{
-		RollingValueStoreEntry* entry = store[key];
 		int numElementsForKey = entry->n;
 		int numNewElements = newSamplesPtr->size();
 		int numElementsToInsert = numElementsForKey < numNewElements ? numElementsForKey:numNewElements;
@@ -213,7 +207,8 @@ bool RollingValueStore::addRollingValues(char* key,vector<float>* newSamplesPtr)
 bool RollingValueStore::calculateMovingAvgWithoutHint(int numSamples, RollingValueStoreEntry* current,float* result) {
 
 
-
+    printf("calculating moving avg without hints");
+    fflush(stdout);
 	int actualNoOfSamples = numSamples > current->n ? current->n : numSamples;
 	actualNoOfSamples =
 			(current->isFull == false) ?
@@ -241,13 +236,14 @@ bool RollingValueStore::calculateMovingAvgWithoutHint(int numSamples, RollingVal
 bool RollingValueStore::getRollingAvg(char* key,int numSamples,float* result)
 {
 
-		if(exists(key)==true)
+		RollingValueStoreEntry* current=NULL;
+		bool exists = store->get(key,(void**)&current,RollingValue);
+
+		if(exists)
 		{
-			RollingValueStoreEntry* current = store[key];
 
 			if(current->hints->find(numSamples)==current->hints->end())
 			{
-
 				//not found in hints so calculate
 				return calculateMovingAvgWithoutHint(numSamples, current,result);
 
@@ -272,9 +268,12 @@ bool RollingValueStore::getRollingAvg(char* key,int numSamples,float* result)
 
 bool RollingValueStore::addHint(char* key,int numSamples)
 {
-		if(exists(key)==true)
+		RollingValueStoreEntry* current=NULL;
+		bool exists = store->get(key,(void**)&current,RollingValue);
+
+		if(exists)
 		{
-			map<int,float>* hints= store[key]->hints;
+			map<int,float>* hints= current->hints;
 			float result;
 			bool temp =getRollingAvg(key,numSamples,&result);
 			if(temp==true)

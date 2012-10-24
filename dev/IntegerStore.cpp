@@ -23,17 +23,30 @@ bool IntegerStore::get(char* query,int** result){
 
 bool IntegerStore::put(char* query,int val){
 
+	int* earlier = NULL;
+	bool earlierExists = this->store->get(query,(void**)&earlier,IntegerValue);
 	int* valPtr = new int(val);
 	bool success = this->store->put(query,valPtr,IntegerValue);
-	return success;
+
+	if(success) {
+
+		if(earlierExists) {
+			delete earlier;
+		}
+		return true;
+	}
+	else {
+		delete valPtr;
+		return false;
+	}
 
 }
 
 bool IntegerStore::increment(char* query,int val,int** result)
 {
-	bool exists = this->store->get(query,(void**)&result,IntegerValue);
+	bool exists = this->store->get(query,(void**)result,IntegerValue);
 	if(exists){
-		*result = *result + val;
+		**result = **result + val;
 		return true;
 	}
 	else {
