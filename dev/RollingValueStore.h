@@ -15,6 +15,13 @@ using namespace std;
 #ifndef ROLLINGVALUESTORE_H_
 #define ROLLINGVALUESTORE_H_
 
+struct HistogramNode {
+	HistogramNode* next;
+	float uniqueNum;
+	int count;
+
+};
+
 struct RollingValueStoreEntry
 {
 	int n;
@@ -24,6 +31,9 @@ struct RollingValueStoreEntry
 	int newPosToInsert;
 	float lifetimeSum;
 	int lifetimeCount;
+	//LinkedList of HistogramNodes maintained in sorted order of numbers
+	HistogramNode* histogramRoot;
+	int numUniqueValuesInHistogram;
 };
 
 class RollingValueStore {
@@ -36,6 +46,8 @@ private:
 	bool calculateMovingAvgWithoutHint(int numSamples,RollingValueStoreEntry* current,float* result);
 	int getActualNumberOfSamples(RollingValueStoreEntry* current);
 	void updateLifeTimeValues(char* key,vector<float>* newSamplesPtr);
+	void updateHistogram(char* key,vector<float>* newSamplesPtr);
+	void insertValueInHistogram(char* key,int num);
 
 public:
 	RollingValueStore(Store* store);
@@ -49,6 +61,7 @@ public:
 	bool getVariance(char* key,float* result);
 	bool getStdDev(char* key,float* result);
 	bool getLifetimeAverage(char* key,float* result);
+	bool getHistogram(char* key,float** uniqueVals,int** frequencies,int** count);
 };
 
 

@@ -1,9 +1,4 @@
-/*
- * StringParserandInvoker.h
- *
- *  Created on: Oct 3, 2012
- *      Author: supriya
- */
+
 
 #include<string>
 
@@ -29,7 +24,8 @@ enum InputType
 	retrieve,
 	variance,
 	stddev,
-	lifetimeavg
+	lifetimeavg,
+	histogram
 };
 
 class StringParserandInvoker {
@@ -52,6 +48,7 @@ private:
 	string getvariance(vector<string> tokens);
 	string getstddev(vector<string> tokens);
 	string getlifetimeavg(vector<string> tokens);
+	string getHistogram(vector<string> tokens);
 	string removeNewLineCharactersAtEndOfLine(string* message);
 public:
 	StringParserandInvoker();

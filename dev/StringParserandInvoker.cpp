@@ -1,9 +1,4 @@
-/*
- * StringParserandInvoker.cpp
- *
- *  Created on: Oct 3, 2012
- *      Author: supriya
- */
+
 #include<string>
 #include<iostream>
 #include<stdlib.h>
@@ -136,11 +131,48 @@ string StringParserandInvoker::operate(string message)
 	case lifetimeavg:
 		returnVal=getlifetimeavg(tokens);
 		break;
+	case histogram:
+		returnVal = getHistogram(tokens);
+		break;
 	default:
 		returnVal="Invalid input";
 		break;
 	}
 	return returnVal;
+
+}
+
+string StringParserandInvoker::getHistogram(vector<string> tokens){
+
+	if(tokens.size()==2)
+	{
+		str=(char*)tokens[1].c_str();
+		float* uniqueVals;
+		int* frequencies;
+		int* count;
+		bool isSuccess = rvs->getHistogram(str,&uniqueVals,&frequencies,&count);
+
+		if(isSuccess) {
+
+			std::stringstream out;
+			out<<"Num Unique Values = "<<*count<<"\n";
+			for(int i=0;i<*count;i++) {
+				out<<"Value = "<<uniqueVals[i]<<", Count = "<<frequencies[i]<<"\n";
+			}
+			return out.str();
+
+		}
+		else {
+
+			return "Key not found";
+		}
+
+	}
+	else
+	{
+		return "Invalid number of parameters. /n Usage HISTOGRAM <key>";
+	}
+
 
 }
 
@@ -230,10 +262,8 @@ string StringParserandInvoker:: retrieveN(vector<string> tokens)
 				if(isSuccess)
 				{
 					std::stringstream out;
-					printf("%d\n",result->size());
 					for(i=0;i<result->size();i++)
 					{
-						//printf("%f",result->at(i));
 						out<<result->at(i);
 						if(i!=(result->size()-1))
 						{
@@ -241,7 +271,7 @@ string StringParserandInvoker:: retrieveN(vector<string> tokens)
 						}
 
 					}
-					fflush(stdout);
+
 					return out.str();
 				}
 				else {
@@ -487,6 +517,7 @@ enumMapping["RETRIEVE"]=retrieve;
 enumMapping["VARIANCE"]=variance;
 enumMapping["STDDEV"]=stddev;
 enumMapping["LIFETIMEAVG"]=lifetimeavg;
+enumMapping["HISTOGRAM"]=histogram;
 
 }
 

@@ -24,6 +24,7 @@ void RollingValueStore::deleteEntry(RollingValueStoreEntry* ptr) {
 	ptr->samples->clear();
 	delete ptr;
 	ptr=NULL;
+	//TODO:Free the histogram nodes
 
 }
 
@@ -55,10 +56,10 @@ bool RollingValueStore :: getVariance(char* key,float* result)
                     sum +=num*num ;
                     ind = ind - 1;
                 }
-                printf("%f\n",avg);
+
                 *result=sum/(float)(actualNoOfSamples);
-                printf("%f\n",*result);
-                fflush(stdout);
+
+
                 return true;
         }
         else
@@ -116,10 +117,8 @@ bool RollingValueStore::retrieve(char* key,int low,int high,vector<float>** ptr)
 			for(i=low;i<=high&&i<actualNoOfSamples;i++)
 			{
 				(*ptr)->at(i-low)=samples->at(i);
-				//printf("%f",ptr->at(i-low));
 			}
 
-			fflush(stdout);
 
 			return true;
 
@@ -129,7 +128,6 @@ bool RollingValueStore::retrieve(char* key,int low,int high,vector<float>** ptr)
 	}
 	else
 	{
-		printf("Key does not exist\n");
 		return false;
 	}
 
@@ -176,6 +174,8 @@ RollingValueStoreEntry* RollingValueStore::createEntry(int numSamples)
 	ptr->hints = new map<int,float>();
 	ptr->lifetimeCount =0;
 	ptr->lifetimeSum =0;
+	ptr->histogramRoot=NULL;
+	ptr->numUniqueValuesInHistogram=0;
 	return ptr;
 }
 
@@ -196,6 +196,103 @@ bool RollingValueStore::getLifetimeAverage(char* key,float* result){
 	}
 }
 
+void RollingValueStore::updateHistogram(char* key,vector<float>* newSamplesPtr){
+
+	RollingValueStoreEntry* entry=NULL;
+	bool exists = store->get(key,(void**)&entry,RollingValue);
+	if(exists) {
+
+		int i=0;
+		for(i=0;i<newSamplesPtr->size();i++)
+		{
+			insertValueInHistogram(key,newSamplesPtr->at(i));
+		}
+	}
+
+}
+
+bool RollingValueStore::getHistogram(char* key,float** uniqueVals,int** frequencies,int** count) {
+
+
+	RollingValueStoreEntry* entry=NULL;
+	bool exists = store->get(key,(void**)&entry,RollingValue);
+	if(exists) {
+
+		*count = new int;
+		**count  = entry->numUniqueValuesInHistogram;
+
+		*uniqueVals = new float[**count];
+		*frequencies = new int[**count];
+
+
+		HistogramNode* current = entry->histogramRoot;
+		int index = 0;
+		while(current!=NULL) {
+
+				(*uniqueVals)[index] = current->uniqueNum;
+				(*frequencies)[index]= current->count;
+				current = current->next;
+				index++;
+
+		}
+		return true;
+	}
+	else {
+		return false;
+	}
+
+
+}
+
+void RollingValueStore::insertValueInHistogram(char* key,int num)
+{
+		RollingValueStoreEntry* entry=NULL;
+		bool exists = store->get(key,(void**)&entry,RollingValue);
+		if(exists) {
+
+				HistogramNode* prev = NULL;
+				HistogramNode* current = entry->histogramRoot;
+
+
+			while(current!=NULL) {
+
+			if(current->uniqueNum>num) {
+					break;
+				}
+				prev = current;
+				current = current->next;
+			}
+
+			if(prev!=NULL) {
+
+				if(prev->uniqueNum==num) {
+					prev->count++;
+				}
+				else {
+					//create a new node
+					HistogramNode* newNode = new HistogramNode();
+					newNode->uniqueNum = num;
+					newNode->count = 1;
+					newNode->next=current;
+					prev->next=newNode;
+					entry->numUniqueValuesInHistogram = entry->numUniqueValuesInHistogram + 1;
+				}
+
+			}
+			else {
+					HistogramNode* newNode = new HistogramNode();
+					newNode->uniqueNum = num;
+					newNode->count = 1;
+					newNode->next=current;
+					entry->histogramRoot = newNode;
+					entry->numUniqueValuesInHistogram = entry->numUniqueValuesInHistogram + 1;
+			}
+
+		}
+
+
+}
+
 void RollingValueStore::updateLifeTimeValues(char* key,vector<float>* newSamplesPtr)
 {
 	RollingValueStoreEntry* entry=NULL;
@@ -213,7 +310,6 @@ void RollingValueStore::updateLifeTimeValues(char* key,vector<float>* newSamples
 		//now update the lifetime sum and count
 		entry->lifetimeCount += count;
 		entry->lifetimeSum += sum;
-		printf("\nLifetimeSum = %f , LifetimeCount = %d \n",entry->lifetimeSum,entry->lifetimeCount);
 	}
 }
 
@@ -222,6 +318,7 @@ bool RollingValueStore::addRollingValues(char* key,vector<float>* newSamplesPtr)
 	RollingValueStoreEntry* entry=NULL;
 
 	updateLifeTimeValues(key,newSamplesPtr);
+	updateHistogram(key,newSamplesPtr);
 
 	bool exists = store->get(key,(void**)&entry,RollingValue);
 
@@ -263,11 +360,10 @@ bool RollingValueStore::addRollingValues(char* key,vector<float>* newSamplesPtr)
 bool RollingValueStore::calculateMovingAvgWithoutHint(int numSamples, RollingValueStoreEntry* current,float* result) {
 
 
-	printf("\nNumSamples = %d,TotSize =%d, IsFull = %d , newPosToInsert = %d\n",numSamples,current->n,current->isFull,current->newPosToInsert);
 	int actualNoOfSamples = getActualNumberOfSamples(current);
-	printf("\nActual no of samples = %d\n",actualNoOfSamples);
+
 	int numSamplesToTakeAverageOf = numSamples < actualNoOfSamples ? numSamples : actualNoOfSamples;
-	printf("\nActual no of samples = %d\n",numSamplesToTakeAverageOf);
+
 	float sum = 0;
 	int i = 0;
 	int ind = current->newPosToInsert - 1;
@@ -364,7 +460,7 @@ void RollingValueStore::updateHints(RollingValueStoreEntry* ptr)
 		}
 		else
 		{
-			//something wrong in recalculating hints. removing the hint key,so next time it is re-computed
+			//TODO : something wrong in recalculating hints. removing the hint key,so next time it is re-computed
 			hints->erase(iter->first);
 		}
 
