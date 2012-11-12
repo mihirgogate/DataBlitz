@@ -8,11 +8,13 @@
 #include<errno.h>
 #include<iostream>
 #include "StringParserandInvoker.h"
+#include "JSONParserAndInvoker.h"
 
 
 #define MAX_EVENTS 128
 #define MAX_INPUT_STRING_LENGTH 256
 #define MAX_OUTPUT_STRING_LENGTH 1024
+#define JSON_PORT 8080
 
  static int createAndBind (char *port)
 {
@@ -64,7 +66,7 @@
 
 
 
-int server_main (char *port,StringParserandInvoker* stringParserAndInvoker)
+int server_main (char *port,StringParserandInvoker* stringParserAndInvoker,JSONParserAndInvoker* jsonParserAndInvoker)
 {
   int sfd, s;
   int efd;
@@ -210,16 +212,23 @@ int server_main (char *port,StringParserandInvoker* stringParserAndInvoker)
                   /*
                    *Find the results of the command
                    */
+
                   string ipAsString = ip;
                   printf("%s",ip);
                   string opAsString;
-                  opAsString = stringParserAndInvoker->operate(ipAsString);
-                  //append a \n so telnet output is clean. TODO: remove when u find aya better w
-                  opAsString =opAsString.append("\n");
+                  //if listening on port 80 then use the JSON parse
+                  if(atoi(port)==JSON_PORT) {
+                	  printf("Using the JSON parser as listening on port %d",JSON_PORT);
+                	  opAsString = jsonParserAndInvoker->operate(ipAsString).c_str();
+                  }
+                  else { //for all ports other than 80 use the String parser
+                	  printf("Using the String parser as listening on a port other than %d",JSON_PORT);
+                	  opAsString = stringParserAndInvoker->operate(ipAsString);
+                	  //append a \n so telnet output is clean. TODO: remove when u find a better way
+                	  opAsString =opAsString.append("\n");
+                  }
 
                   op=opAsString.c_str();
-                  //String parser is invoked here that handles the messages
-
                   write(events[i].data.fd, (const char*)(op), (unsigned int)(opAsString.length()));
 
                 }

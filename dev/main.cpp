@@ -5,6 +5,7 @@
 #include "RollingValueStore.h"
 #include "IntegerStore.h"
 #include "StringParserandInvoker.h"
+#include "JSONParserAndInvoker.h"
 #include "server.h"
 #include "Store.h"
 
@@ -24,8 +25,9 @@ int main(int argc, char *argv[])
 	IntegerStore* is = new IntegerStore(s);
 	RollingValueStore* rvs = new RollingValueStore(s);
 	StringParserandInvoker spi(is,rvs);
+	JSONParserAndInvoker* jsi = new JSONParserAndInvoker(is,rvs);
 
-	server_main(argv[1l],&spi);
+	server_main(argv[1l],&spi,jsi);
 
 /*
  * Sample tests for Store below
