@@ -13,10 +13,12 @@ class JSONParserAndInvoker
 	Json::Value createErrorJsonObject(string errorMessage);
 	string get(Json::Value root);
 	string put(Json::Value root);
+	string declsamples(Json::Value root);
+	string addsamples(Json::Value root);
+	string histogram(Json::Value root);
 
 	public:
 	string operate(string jsonString);
 	JSONParserAndInvoker(IntegerStore* is, RollingValueStore* rs) ;
-
 
 };

@@ -12,7 +12,7 @@
 
 
 #define MAX_EVENTS 128
-#define MAX_INPUT_STRING_LENGTH 256
+#define MAX_INPUT_STRING_LENGTH 1024
 #define MAX_OUTPUT_STRING_LENGTH 1024
 #define JSON_PORT 8080
 
@@ -121,7 +121,7 @@ int server_main (char *port,StringParserandInvoker* stringParserAndInvoker,JSONP
 	{
 	  if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
 	    {
-	      printf ("Error in epoll\n");
+	      //printf ("Error in epoll\n"); A client disconneted unexpectedly.
 	      close (events[i].data.fd);
 	      continue;
 	    }
@@ -214,21 +214,26 @@ int server_main (char *port,StringParserandInvoker* stringParserAndInvoker,JSONP
                    */
 
                   string ipAsString = ip;
-                  printf("%s",ip);
+                  printf("Input =  %s\n",ip);
+                  fflush(stdout);
                   string opAsString;
-                  //if listening on port 80 then use the JSON parse
+                  //if listening on port JSON_PORT then use the JSON parse
                   if(atoi(port)==JSON_PORT) {
-                	  printf("Using the JSON parser as listening on port %d",JSON_PORT);
+                	  printf("Using the JSON parser as listening on port %d\n",JSON_PORT);
+                	  fflush(stdout);
                 	  opAsString = jsonParserAndInvoker->operate(ipAsString).c_str();
                   }
-                  else { //for all ports other than 80 use the String parser
+                  else { //for all ports other than JSON_PORT use the String parser
                 	  printf("Using the String parser as listening on a port other than %d",JSON_PORT);
+                	  fflush(stdout);
                 	  opAsString = stringParserAndInvoker->operate(ipAsString);
                 	  //append a \n so telnet output is clean. TODO: remove when u find a better way
                 	  opAsString =opAsString.append("\n");
                   }
 
                   op=opAsString.c_str();
+                  printf("Output=%s\n",op);
+                  fflush(stdout);
                   write(events[i].data.fd, (const char*)(op), (unsigned int)(opAsString.length()));
 
                 }

@@ -47,7 +47,7 @@ private:
 	int getActualNumberOfSamples(RollingValueStoreEntry* current);
 	void updateLifeTimeValues(char* key,vector<float>* newSamplesPtr);
 	void updateHistogram(char* key,vector<float>* newSamplesPtr);
-	void insertValueInHistogram(char* key,int num);
+	void insertValueInHistogram(char* key,float num);
 
 public:
 	RollingValueStore(Store* store);

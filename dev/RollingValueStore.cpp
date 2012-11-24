@@ -225,14 +225,21 @@ bool RollingValueStore::getHistogram(char* key,float** uniqueVals,int** frequenc
 		*frequencies = new int[**count];
 
 
+		//TODO: temp fix till we understand why zeros are added at the start
+		**count = **count - 1;
+
 		HistogramNode* current = entry->histogramRoot;
 		int index = 0;
 		while(current!=NULL) {
 
-				(*uniqueVals)[index] = current->uniqueNum;
-				(*frequencies)[index]= current->count;
+				//TODO: temp fix till we understand why zeros are added at the start
 				current = current->next;
-				index++;
+				if(current!=NULL) {
+					(*uniqueVals)[index] = current->uniqueNum;
+					(*frequencies)[index]= current->count;
+					index++;
+				}
+
 
 		}
 		return true;
@@ -244,7 +251,7 @@ bool RollingValueStore::getHistogram(char* key,float** uniqueVals,int** frequenc
 
 }
 
-void RollingValueStore::insertValueInHistogram(char* key,int num)
+void RollingValueStore::insertValueInHistogram(char* key,float num)
 {
 		RollingValueStoreEntry* entry=NULL;
 		bool exists = store->get(key,(void**)&entry,RollingValue);
